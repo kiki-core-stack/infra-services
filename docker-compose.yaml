@@ -1,0 +1,86 @@
+name: el-plus-admin-services
+
+x-base-mongodb-options: &base-mongodb-options
+  image: mongodb/mongodb-community-server:latest
+  restart: always
+  user: root:nogroup
+
+services:
+  # KeyDB
+  keydb:
+    container_name: el-plus-admin-keydb
+    image: eqalpha/keydb:alpine
+    ports:
+      - 0.0.0.0:${KEYDB_EXPOSE_PORT}:6379
+    restart: always
+    volumes:
+      - keydb-data:/data
+
+  # MongoDB data servers
+  mongodb-data-1:
+    <<: *base-mongodb-options
+    container_name: el-plus-admin-mongodb-data-1
+    entrypoint: >
+      bash -c "
+        mongod --bind_ip 0.0.0.0 --port 27017 --replSet rs0 &
+
+        until mongosh --eval 'print(\"waiting for MongoDB connection...\")' --quiet; do
+          sleep 3
+        done
+
+        if [ ! -f /etc/.init_done ]; then
+          echo 'Initializing replica set...'
+          mongosh --eval \"
+            try {
+              rs.status();
+            } catch (error) {
+              rs.initiate({
+                _id: 'rs0',
+                members: [
+                  { _id: 0, host: '${HOST}:${MONGODB_DATA_1_EXPOSE_PORT}' },
+                  { _id: 1, host: '${HOST}:${MONGODB_DATA_2_EXPOSE_PORT}' },
+                  { _id: 2, host: '${HOST}:${MONGODB_DATA_3_EXPOSE_PORT}' }
+                ]
+              });
+            }
+          \" --port 27017 --quiet
+          touch /etc/.init_done
+          echo 'Replica set initialized.'
+        else
+          echo 'Replica set already initialized.'
+        fi
+
+        tail -f /dev/null
+      "
+
+    ports:
+      - 0.0.0.0:${MONGODB_DATA_1_EXPOSE_PORT}:27017
+    volumes:
+      - mongodb-data-1-config:/data/configdb
+      - ${MONGODB_DATA_1_FILES_PATH}:/data/db
+
+  mongodb-data-2:
+    <<: *base-mongodb-options
+    command: --replSet rs0
+    container_name: el-plus-admin-mongodb-data-2
+    ports:
+      - 0.0.0.0:${MONGODB_DATA_2_EXPOSE_PORT}:27017
+    volumes:
+      - mongodb-data-2-config:/data/configdb
+      - ${MONGODB_DATA_2_FILES_PATH}:/data/db
+
+  mongodb-data-3:
+    <<: *base-mongodb-options
+    command: --replSet rs0
+    container_name: el-plus-admin-mongodb-data-3
+    ports:
+      - 0.0.0.0:${MONGODB_DATA_3_EXPOSE_PORT}:27017
+    volumes:
+      - mongodb-data-3-config:/data/configdb
+      - ${MONGODB_DATA_3_FILES_PATH}:/data/db
+
+volumes:
+  keydb-data:
+  mongodb-data-1-config:
+  mongodb-data-2-config:
+  mongodb-data-3-config:
