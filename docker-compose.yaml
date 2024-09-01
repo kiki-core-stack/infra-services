@@ -1,4 +1,4 @@
-name: el-plus-admin-services
+name: kiki-core-stack-services
 
 x-base-mongodb-options: &base-mongodb-options
   image: mongodb/mongodb-community-server:latest
@@ -8,7 +8,7 @@ x-base-mongodb-options: &base-mongodb-options
 services:
   # KeyDB
   keydb:
-    container_name: el-plus-admin-keydb
+    container_name: kiki-core-stack-keydb
     image: eqalpha/keydb:alpine
     ports:
       - 0.0.0.0:${KEYDB_EXPOSE_PORT}:6379
@@ -19,7 +19,7 @@ services:
   # MongoDB data servers
   mongodb-data-1:
     <<: *base-mongodb-options
-    container_name: el-plus-admin-mongodb-data-1
+    container_name: kiki-core-stack-mongodb-data-1
     entrypoint: >
       bash -c "
         mongod --bind_ip 0.0.0.0 --port 27017 --replSet rs0 &
@@ -62,7 +62,7 @@ services:
   mongodb-data-2:
     <<: *base-mongodb-options
     command: --replSet rs0
-    container_name: el-plus-admin-mongodb-data-2
+    container_name: kiki-core-stack-mongodb-data-2
     ports:
       - 0.0.0.0:${MONGODB_DATA_2_EXPOSE_PORT}:27017
     volumes:
@@ -72,7 +72,7 @@ services:
   mongodb-data-3:
     <<: *base-mongodb-options
     command: --replSet rs0
-    container_name: el-plus-admin-mongodb-data-3
+    container_name: kiki-core-stack-mongodb-data-3
     ports:
       - 0.0.0.0:${MONGODB_DATA_3_EXPOSE_PORT}:27017
     volumes:
