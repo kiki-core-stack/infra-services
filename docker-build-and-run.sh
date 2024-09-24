@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$1" = "-p" ]; then
+if [ "$1" = '-p' ]; then
 	docker compose pull
 fi
 
