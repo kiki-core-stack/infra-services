@@ -11,7 +11,7 @@ services:
     container_name: kiki-core-stack-keydb
     image: eqalpha/keydb:alpine
     ports:
-      - 0.0.0.0:${KEYDB_EXPOSE_PORT}:6379
+      - 0.0.0.0:${KEYDB_EXPOSE_PORT:-6380}:6379
     restart: always
     volumes:
       - keydb-data:/data
@@ -23,7 +23,7 @@ services:
     entrypoint: >
       bash -c "
         mongod --bind_ip 0.0.0.0 --port 27017 --replSet rs0 &
-        until mongosh --eval 'print(\"waiting for MongoDB connection...\")' --quiet; do
+        until mongosh --eval 'print(\"Waiting for MongoDB connection...\")' --quiet; do
           sleep 3
         done
 
