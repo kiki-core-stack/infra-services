@@ -11,7 +11,7 @@ services:
     container_name: kiki-core-stack-keydb
     image: eqalpha/keydb:alpine
     ports:
-      - 0.0.0.0:${KEYDB_EXPOSE_PORT:-6380}:6379
+      - 0.0.0.0:${KEYDB_EXPOSE_PORT}:6379
     restart: always
     volumes:
       - keydb-data:/data
