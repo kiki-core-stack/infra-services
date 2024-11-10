@@ -1,6 +1,8 @@
 name: kiki-core-stack-services
 
 x-base-mongodb-options: &base-mongodb-options
+  environment:
+    GLIBC_TUNABLES: glibc.pthread.rseq=0
   image: mongodb/mongodb-community-server:latest
   restart: always
   user: root:nogroup
