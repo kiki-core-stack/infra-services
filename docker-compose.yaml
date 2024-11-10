@@ -24,7 +24,7 @@ services:
     container_name: kiki-core-stack-mongodb-data-1
     entrypoint: >
       bash -c "
-        mongod --bind_ip 0.0.0.0 --port 27017 --replSet rs0 &
+        LD_PRELOAD=/libforce_enable_thp.so python3 /usr/local/bin/docker-entrypoint.py --replSet rs0 &
         until mongosh --eval 'print(\"Waiting for MongoDB connection...\")' --quiet; do
           sleep 3
         done
@@ -51,28 +51,31 @@ services:
     ports:
       - 0.0.0.0:${MONGODB_DATA_1_EXPOSE_PORT}:27017
     volumes:
-      - mongodb-data-1-config:/data/configdb
       - ${MONGODB_DATA_1_FILES_PATH}:/data/db
+      - ./libforce_enable_thp.so:/libforce_enable_thp.so
+      - mongodb-data-1-config:/data/configdb
 
   mongodb-data-2:
     <<: *base-mongodb-options
-    command: --replSet rs0
     container_name: kiki-core-stack-mongodb-data-2
+    entrypoint: "bash -c 'LD_PRELOAD=/libforce_enable_thp.so python3 /usr/local/bin/docker-entrypoint.py --replSet rs0'"
     ports:
       - 0.0.0.0:${MONGODB_DATA_2_EXPOSE_PORT}:27017
     volumes:
-      - mongodb-data-2-config:/data/configdb
       - ${MONGODB_DATA_2_FILES_PATH}:/data/db
+      - ./libforce_enable_thp.so:/libforce_enable_thp.so
+      - mongodb-data-2-config:/data/configdb
 
   mongodb-data-3:
     <<: *base-mongodb-options
-    command: --replSet rs0
     container_name: kiki-core-stack-mongodb-data-3
+    entrypoint: "bash -c 'LD_PRELOAD=/libforce_enable_thp.so python3 /usr/local/bin/docker-entrypoint.py --replSet rs0'"
     ports:
       - 0.0.0.0:${MONGODB_DATA_3_EXPOSE_PORT}:27017
     volumes:
-      - mongodb-data-3-config:/data/configdb
       - ${MONGODB_DATA_3_FILES_PATH}:/data/db
+      - ./libforce_enable_thp.so:/libforce_enable_thp.so
+      - mongodb-data-3-config:/data/configdb
 
 volumes:
   keydb-data:
