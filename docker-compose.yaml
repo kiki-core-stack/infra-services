@@ -1,4 +1,4 @@
-name: kiki-core-stack-services
+name: kiki-core-stack-infra-services
 
 x-base-mongodb-options: &base-mongodb-options
   environment:
