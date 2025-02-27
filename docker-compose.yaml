@@ -7,15 +7,23 @@ x-base-mongodb-options: &base-mongodb-options
   restart: always
   user: root:nogroup
 
+secrets:
+  KEYDB_MAIN_PASSWORD:
+    environment: KEYDB_MAIN_PASSWORD
+
 services:
   # KeyDB
   keydb:
     container_name: kiki-core-stack-keydb
+    entrypoint: /custom-entrypoint.sh
     image: eqalpha/keydb:alpine
     ports:
       - '127.0.0.1:${KEYDB_EXPOSE_PORT}:6379'
     restart: always
+    secrets:
+      - KEYDB_MAIN_PASSWORD
     volumes:
+      - ./keydb/entrypoint.sh:/custom-entrypoint.sh
       - keydb-data:/data
 
   # MongoDB data servers
