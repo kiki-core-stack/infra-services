@@ -1,4 +1,4 @@
-name: '${PROJECT_NAME}-infra-services'
+name: ${PROJECT_NAME}-infra-services
 
 x-base-mongodb-options: &base-mongodb-options
   entrypoint: /opt/mongodb/entrypoint.sh
@@ -19,51 +19,51 @@ secrets:
 services:
   # KeyDB
   keydb:
-    container_name: '${PROJECT_NAME}-keydb'
+    container_name: ${PROJECT_NAME}-keydb
     entrypoint: /opt/keydb/entrypoint.sh
     image: eqalpha/keydb:alpine
     ports:
-      - '${KEYDB_EXPOSE_HOST}:${KEYDB_EXPOSE_PORT:-6379}:6379'
+      - ${KEYDB_EXPOSE_HOST}:${KEYDB_EXPOSE_PORT:-6379}:6379
     restart: always
     secrets:
       - KEYDB_PASSWORD
     volumes:
-      - './keydb:/opt/keydb'
-      - 'keydb-data:/data'
+      - ./keydb:/opt/keydb
+      - keydb-data:/data
 
   # MongoDB data servers
   mongodb-data-1:
     <<: *base-mongodb-options
-    container_name: '${PROJECT_NAME}-mongodb-data-1'
+    container_name: ${PROJECT_NAME}-mongodb-data-1
     hostname: mongodb-data-1
     ports:
-      - '${MONGODB_EXPOSE_HOST}:${MONGODB_DATA_1_EXPOSE_PORT}:27017'
+      - ${MONGODB_EXPOSE_HOST}:${MONGODB_DATA_1_EXPOSE_PORT}:27017
     volumes:
-      - '${MONGODB_DATA_1_FILES_PATH}:/data/db'
-      - './mongodb:/opt/mongodb'
-      - 'mongodb-data-1-config:/data/configdb'
+      - ${MONGODB_DATA_1_FILES_PATH}:/data/db
+      - ./mongodb:/opt/mongodb
+      - mongodb-data-1-config:/data/configdb
 
   mongodb-data-2:
     <<: *base-mongodb-options
-    container_name: '${PROJECT_NAME}-mongodb-data-2'
+    container_name: ${PROJECT_NAME}-mongodb-data-2
     hostname: mongodb-data-2
     ports:
-      - '${MONGODB_EXPOSE_HOST}:${MONGODB_DATA_2_EXPOSE_PORT}:27017'
+      - ${MONGODB_EXPOSE_HOST}:${MONGODB_DATA_2_EXPOSE_PORT}:27017
     volumes:
-      - '${MONGODB_DATA_2_FILES_PATH}:/data/db'
-      - './mongodb:/opt/mongodb'
-      - 'mongodb-data-2-config:/data/configdb'
+      - ${MONGODB_DATA_2_FILES_PATH}:/data/db
+      - ./mongodb:/opt/mongodb
+      - mongodb-data-2-config:/data/configdb
 
   mongodb-data-3:
     <<: *base-mongodb-options
-    container_name: '${PROJECT_NAME}-mongodb-data-3'
+    container_name: ${PROJECT_NAME}-mongodb-data-3
     hostname: mongodb-data-3
     ports:
-      - '${MONGODB_EXPOSE_HOST}:${MONGODB_DATA_3_EXPOSE_PORT}:27017'
+      - ${MONGODB_EXPOSE_HOST}:${MONGODB_DATA_3_EXPOSE_PORT}:27017
     volumes:
-      - '${MONGODB_DATA_3_FILES_PATH}:/data/db'
-      - './mongodb:/opt/mongodb'
-      - 'mongodb-data-3-config:/data/configdb'
+      - ${MONGODB_DATA_3_FILES_PATH}:/data/db
+      - ./mongodb:/opt/mongodb
+      - mongodb-data-3-config:/data/configdb
 
 volumes:
   keydb-data:
