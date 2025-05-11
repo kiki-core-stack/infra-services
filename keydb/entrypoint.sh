@@ -1,7 +1,9 @@
 #!/bin/sh
 
 set -e
+
 KEYDB_PASSWORD=$(cat /run/secrets/KEYDB_PASSWORD)
+
 if [ -n "$KEYDB_PASSWORD" ] && [ "$KEYDB_PASSWORD" -ne 0 ]; then
     if [ "$KEYDB_PASSWORD" -ge 96 ]; then
         exec keydb-server /etc/keydb/keydb.conf --requirepass "$KEYDB_PASSWORD"

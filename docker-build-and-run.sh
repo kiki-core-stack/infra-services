@@ -1,11 +1,11 @@
 #!/bin/bash
 
 set -e
-cd "$(dirname "$(readlink -f "$0")")"
 
-if [[ "$*" == *'-p'* ]]; then
-    docker compose pull
-fi
+SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+cd "$SCRIPT_DIR"
+
+[[ " $@ " =~ ' -p ' ]] && docker compose pull
 
 gcc \
     -fPIC \
@@ -15,13 +15,13 @@ gcc \
     -shared \
     -Werror=format-security \
     -Wformat \
-    -o ./libforce_enable_thp.so \
-    ./force_enable_thp.c \
+    -o ./mongodb/libforce_enable_thp.so \
+    ./mongodb/force_enable_thp.c \
     -ldl \
     -Wl,--as-needed \
     -Wl,-O2 \
     -Wl,-z,now \
     -Wl,-z,relro
 
-docker compose build
+COMPOSE_BAKE=true docker compose build
 docker compose up -d --remove-orphans
