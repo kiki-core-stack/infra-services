@@ -4,10 +4,10 @@ x-base-mongodb-options: &base-mongodb-options
   entrypoint: /opt/mongodb/entrypoint.sh
   environment:
     GLIBC_TUNABLES: glibc.pthread.rseq=0
-    MONGODB_DATA_1_EXPOSE_PORT: $MONGODB_DATA_1_EXPOSE_PORT
-    MONGODB_DATA_2_EXPOSE_PORT: $MONGODB_DATA_2_EXPOSE_PORT
-    MONGODB_DATA_3_EXPOSE_PORT: $MONGODB_DATA_3_EXPOSE_PORT
-    MONGODB_RS_HOST: $MONGODB_RS_HOST
+    MONGODB_DATA_1_EXPOSE_PORT: ${MONGODB_DATA_1_EXPOSE_PORT}
+    MONGODB_DATA_2_EXPOSE_PORT: ${MONGODB_DATA_2_EXPOSE_PORT}
+    MONGODB_DATA_3_EXPOSE_PORT: ${MONGODB_DATA_3_EXPOSE_PORT}
+    MONGODB_RS_HOST: ${MONGODB_RS_HOST}
   image: mongodb/mongodb-community-server:8.0-ubuntu2204
   restart: always
   user: root:nogroup
