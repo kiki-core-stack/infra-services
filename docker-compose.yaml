@@ -1,4 +1,4 @@
-name: "${PROJECT_NAME}-infra-services"
+name: '${PROJECT_NAME}-infra-services'
 
 secrets:
   DRAGONFLY_PASSWORD:
@@ -7,7 +7,7 @@ secrets:
 services:
   # Dragonfly
   dragonfly:
-    container_name: "${PROJECT_NAME}-dragonfly"
+    container_name: '${PROJECT_NAME}-dragonfly'
     entrypoint: /opt/dragonfly/entrypoint.sh
     image: docker.dragonflydb.io/dragonflydb/dragonfly
     ports:
@@ -18,28 +18,28 @@ services:
     ulimits:
       memlock: -1
     volumes:
-      - ./dragonfly:/opt/dragonfly
-      - dragonfly-data:/data
+      - './dragonfly:/opt/dragonfly'
+      - 'dragonfly-data:/data'
 
   # MongoDB
   mongodb:
-    container_name: "${PROJECT_NAME}-mongodb"
+    container_name: '${PROJECT_NAME}-mongodb'
     entrypoint: /opt/mongodb/entrypoint.sh
-    hostname: "${PROJECT_NAME}-mongodb"
-    image: mongodb/mongodb-community-server:8.2-ubuntu2204
+    hostname: '${PROJECT_NAME}-mongodb'
+    image: 'mongodb/mongodb-community-server:8.2-ubuntu2204'
     ports:
-      - "${MONGODB_EXPOSE_HOST}:${MONGODB_EXPOSE_PORT}:27017"
+      - '${MONGODB_EXPOSE_HOST}:${MONGODB_EXPOSE_PORT}:27017'
     restart: always
     ulimits:
       nofile:
         hard: 64000
         soft: 64000
-    user: root:nogroup
+    user: 'root:nogroup'
     volumes:
-      - "${MONGODB_BACKUPS_PATH}:/mnt/backups"
-      - "${MONGODB_FILES_PATH}:/data/db"
-      - ./mongodb:/opt/mongodb
-      - mongodb-config:/data/configdb
+      - '${MONGODB_BACKUPS_PATH}:/mnt/backups'
+      - '${MONGODB_FILES_PATH}:/data/db'
+      - './mongodb:/opt/mongodb'
+      - 'mongodb-config:/data/configdb'
 
 volumes:
   dragonfly-data:
