@@ -26,7 +26,7 @@ services:
     container_name: '${PROJECT_NAME}-mongodb'
     entrypoint: /opt/mongodb/entrypoint.sh
     hostname: '${PROJECT_NAME}-mongodb'
-    image: 'mongodb/mongodb-community-server:8.2-ubuntu2204'
+    image: 'mongodb/mongodb-community-server:8.3-ubuntu2204-slim'
     ports:
       - '${MONGODB_EXPOSE_HOST}:${MONGODB_EXPOSE_PORT}:27017'
     restart: always
