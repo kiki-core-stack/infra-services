@@ -5,6 +5,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
+chmod 755 ./dragonfly ./mongodb
+find ./dragonfly ./mongodb -type f -name '*.sh' -exec chmod 755 {} +
+
 for arg in "$@"; do
     if [[ "${arg}" == '-p' ]]; then
         docker compose pull
