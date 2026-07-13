@@ -2,6 +2,21 @@
 
 set -euo pipefail
 
-GLIBC_TUNABLES='glibc.pthread.rseq=0' \
-    LD_PRELOAD='/opt/mongodb/libforce_enable_thp.so' \
-    exec mongod --bind_ip_all --replSet rs0 "$@"
+readonly KEYFILE_PATH='/data/configdb/keyfile'
+
+if [ ! -s "${KEYFILE_PATH}" ]; then
+    echo 'Warning: MongoDB keyfile does not exist; generating a persistent keyfile' >&2
+
+    KEYFILE_TMP="$(mktemp "${KEYFILE_PATH}.XXXXXX")"
+    trap 'rm -f "${KEYFILE_TMP}"' EXIT
+
+    head -c 756 /dev/urandom | base64 | tr -d '\n' >"${KEYFILE_TMP}"
+    chmod 400 "${KEYFILE_TMP}"
+    mv "${KEYFILE_TMP}" "${KEYFILE_PATH}"
+
+    trap - EXIT
+fi
+
+chmod 400 "${KEYFILE_PATH}"
+
+exec "$@"

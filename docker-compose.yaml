@@ -10,35 +10,60 @@ services:
     container_name: '${PROJECT_NAME}-dragonfly'
     entrypoint: /opt/dragonfly/entrypoint.sh
     image: docker.dragonflydb.io/dragonflydb/dragonfly
-    ports:
-      - ${DRAGONFLY_EXPOSE_HOST}:${DRAGONFLY_EXPOSE_PORT:-6379}:6379
+    logging:
+      driver: json-file
+      options:
+        max-file: '5'
+        max-size: 10m
+    # ports:
+    #   - ${DRAGONFLY_EXPOSE_HOST:-127.0.0.1}:${DRAGONFLY_EXPOSE_PORT:-6379}:6379
     restart: always
     secrets:
       - DRAGONFLY_PASSWORD
     ulimits:
       memlock: -1
     volumes:
-      - './dragonfly:/opt/dragonfly'
+      - './dragonfly:/opt/dragonfly:ro'
       - 'dragonfly-data:/data'
 
   # MongoDB
   mongodb:
+    command:
+      - mongod
+      - --bind_ip_all
+      # - --keyFile
+      # - /data/configdb/keyfile
+      - --replSet
+      - rs0
     container_name: '${PROJECT_NAME}-mongodb'
     entrypoint: /opt/mongodb/entrypoint.sh
+    environment:
+      GLIBC_TUNABLES: glibc.pthread.rseq=0
     hostname: '${PROJECT_NAME}-mongodb'
     image: 'mongodb/mongodb-community-server:8.3-ubuntu2204-slim'
-    ports:
-      - '${MONGODB_EXPOSE_HOST}:${MONGODB_EXPOSE_PORT}:27017'
+    logging:
+      driver: json-file
+      options:
+        max-file: '5'
+        max-size: 10m
+    # ports:
+    #   - '${MONGODB_EXPOSE_HOST:-127.0.0.1}:${MONGODB_EXPOSE_PORT:-27017}:27017'
     restart: always
+    stop_grace_period: 2m
     ulimits:
+      memlock:
+        hard: -1
+        soft: -1
       nofile:
         hard: 64000
         soft: 64000
-    user: 'root:nogroup'
+      nproc:
+        hard: 64000
+        soft: 64000
     volumes:
-      - '${MONGODB_BACKUPS_PATH}:/mnt/backups'
-      - '${MONGODB_FILES_PATH}:/data/db'
-      - './mongodb:/opt/mongodb'
+      - '${MONGODB_BACKUPS_PATH:?must be set}:/mnt/backups'
+      - '${MONGODB_FILES_PATH:?must be set}:/data/db'
+      - './mongodb:/opt/mongodb:ro'
       - 'mongodb-config:/data/configdb'
 
 volumes:

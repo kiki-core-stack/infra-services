@@ -1,4 +1,8 @@
 {
+  "[nginx]": { "editor.formatOnSave": true },
+  "[shellscript]": {
+    "editor.formatOnSave": true
+  },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never"
@@ -17,28 +21,15 @@
     { "fixable": true, "rule": "style/*", "severity": "off" }
   ],
   "eslint.validate": [
-    "astro",
-    "css",
     "dockercompose",
-    "gql",
-    "graphql",
-    "html",
     "javascript",
-    "javascriptreact",
     "json",
     "jsonc",
-    "less",
     "markdown",
-    "pcss",
-    "postcss",
-    "scss",
-    "svelte",
     "toml",
-    "typescript",
-    "typescriptreact",
-    "vue",
     "xml",
     "yaml"
   ],
+  "eslint.workingDirectories": [{ "mode": "auto" }],
   "prettier.enable": false
 }
