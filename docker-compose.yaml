@@ -3,3 +3,6 @@ name: '${PROJECT_NAME:?must be set}-infra-services'
 include:
   - ./stacks/dragonfly/compose.yaml
   - ./stacks/mongodb/compose.yaml
+  # - ./stacks/postgres/compose.yaml
+  # - ./stacks/rabbitmq/compose.yaml
+  # - ./stacks/rustfs/compose.yaml
