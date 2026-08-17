@@ -1,0 +1,27 @@
+secrets:
+  DRAGONFLY_PASSWORD:
+    environment: DRAGONFLY_PASSWORD
+
+services:
+  dragonfly:
+    container_name: '${PROJECT_NAME:?must be set}-dragonfly'
+    entrypoint: /opt/dragonfly/entrypoint.sh
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    logging:
+      driver: json-file
+      options:
+        max-file: '5'
+        max-size: 10m
+    # ports:
+    #   - '${DRAGONFLY_EXPOSE_HOST:-127.0.0.1}:${DRAGONFLY_EXPOSE_PORT:-6379}:6379'
+    restart: always
+    secrets:
+      - DRAGONFLY_PASSWORD
+    ulimits:
+      memlock: -1
+    volumes:
+      - './opt:/opt/dragonfly:ro'
+      - 'dragonfly-data:/data'
+
+volumes:
+  dragonfly-data:
