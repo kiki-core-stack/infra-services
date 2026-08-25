@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
-find ./stacks -type d -exec chmod 755 {} +
+find ./stacks -type d -name opt -exec chmod 755 {} +
 find ./stacks -type f -name '*.sh' -exec chmod 755 {} +
 
 for arg in "$@"; do
