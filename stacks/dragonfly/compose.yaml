@@ -13,7 +13,7 @@ services:
         max-file: '5'
         max-size: 10m
     # ports:
-    #   - '${DRAGONFLY_EXPOSE_HOST:-127.0.0.1}:${DRAGONFLY_EXPOSE_PORT:-6379}:6379'
+    #   - '${DRAGONFLY_EXPOSE_HOST:?must be set}:${DRAGONFLY_EXPOSE_PORT:?must be set}:6379'
     restart: always
     secrets:
       - DRAGONFLY_PASSWORD

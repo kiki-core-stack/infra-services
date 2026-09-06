@@ -19,7 +19,7 @@ services:
         max-file: '5'
         max-size: 10m
     # ports:
-    #   - '${MONGODB_EXPOSE_HOST:-127.0.0.1}:${MONGODB_EXPOSE_PORT:-27017}:27017'
+    #   - '${MONGODB_EXPOSE_HOST:?must be set}:${MONGODB_EXPOSE_PORT:?must be set}:27017'
     restart: always
     stop_grace_period: 2m
     ulimits:

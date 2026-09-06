@@ -3,8 +3,8 @@ services:
     container_name: '${PROJECT_NAME:?must be set}-rabbitmq'
     environment:
       RABBITMQ_DEFAULT_PASS: '${RABBITMQ_PASSWORD:?must be set}'
-      RABBITMQ_DEFAULT_USER: '${RABBITMQ_USER:-rabbitmq}'
-      RABBITMQ_DEFAULT_VHOST: '${RABBITMQ_VHOST:-/}'
+      RABBITMQ_DEFAULT_USER: '${RABBITMQ_USER:?must be set}'
+      RABBITMQ_DEFAULT_VHOST: '${RABBITMQ_VHOST:?must be set}'
       TZ: UTC
     healthcheck:
       test:
@@ -24,8 +24,8 @@ services:
         max-file: '5'
         max-size: 10m
     ports:
-      - '${RABBITMQ_EXPOSE_HOST:-127.0.0.1}:${RABBITMQ_AMQP_EXPOSE_PORT:-5672}:5672'
-      - '${RABBITMQ_EXPOSE_HOST:-127.0.0.1}:${RABBITMQ_MANAGEMENT_EXPOSE_PORT:-15672}:15672'
+      - '${RABBITMQ_EXPOSE_HOST:?must be set}:${RABBITMQ_AMQP_EXPOSE_PORT:?must be set}:5672'
+      - '${RABBITMQ_EXPOSE_HOST:?must be set}:${RABBITMQ_MANAGEMENT_EXPOSE_PORT:?must be set}:15672'
     restart: always
     stop_grace_period: 1m
     ulimits:

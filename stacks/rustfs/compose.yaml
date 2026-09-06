@@ -26,8 +26,8 @@ services:
         max-file: '5'
         max-size: 10m
     ports:
-      - '${RUSTFS_EXPOSE_HOST:-127.0.0.1}:${RUSTFS_API_EXPOSE_PORT:-9000}:9000'
-      - '${RUSTFS_EXPOSE_HOST:-127.0.0.1}:${RUSTFS_CONSOLE_EXPOSE_PORT:-9001}:9001'
+      - '${RUSTFS_EXPOSE_HOST:?must be set}:${RUSTFS_API_EXPOSE_PORT:?must be set}:9000'
+      - '${RUSTFS_EXPOSE_HOST:?must be set}:${RUSTFS_CONSOLE_EXPOSE_PORT:?must be set}:9001'
     restart: always
     secrets:
       - RUSTFS_ACCESS_KEY
