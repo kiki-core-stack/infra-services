@@ -12,7 +12,12 @@ services:
     environment:
       GLIBC_TUNABLES: glibc.pthread.rseq=0
     healthcheck:
-      test: [CMD, mongosh, --quiet, --eval, 'quit(db.adminCommand({ ping: 1 }).ok === 1 ? 0 : 1)']
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - 'quit(db.adminCommand({ ping: 1 }).ok === 1 ? 0 : 1)'
       interval: 5s
       timeout: 5s
       retries: 12
