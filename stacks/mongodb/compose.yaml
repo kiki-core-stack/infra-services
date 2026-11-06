@@ -3,7 +3,7 @@ services:
     command:
       - mongod
       - --config
-      - /etc/mongod.conf
+      - /etc/mongod.yaml
     container_name: '${PROJECT_NAME:?must be set}-mongodb'
     depends_on:
       mongodb-permissions:
@@ -41,8 +41,8 @@ services:
     volumes:
       - '${MONGODB_BACKUPS_PATH:?must be set}:/mnt/backups'
       - '${MONGODB_FILES_PATH:?must be set}:/data/db'
-      - './etc/mongod.conf:/etc/mongod.conf:ro'
-      - './etc/mongosh.conf:/etc/mongosh.conf:ro'
+      - './etc/mongod.yaml:/etc/mongod.yaml:ro'
+      - './etc/mongosh.yaml:/etc/mongosh.conf:ro'
       - './opt:/opt/mongodb:ro'
       - 'mongodb-config:/data/configdb'
 
@@ -62,7 +62,7 @@ services:
     image: 'mongodb/mongodb-community-server:9.0-ubi10-slim'
     restart: no
     volumes:
-      - './etc/mongosh.conf:/etc/mongosh.conf:ro'
+      - './etc/mongosh.yaml:/etc/mongosh.conf:ro'
       - './opt:/opt/mongodb:ro'
 
   mongodb-permissions:
