@@ -5,4 +5,4 @@ include:
   - ./stacks/mongodb/compose.yaml
   # - ./stacks/postgres/compose.yaml
   # - ./stacks/rabbitmq/compose.yaml
-  # - ./stacks/rustfs/compose.yaml
+  - ./stacks/rustfs/compose.yaml
