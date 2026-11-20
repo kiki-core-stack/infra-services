@@ -1,17 +1,13 @@
 #!/bin/sh
 
-# Creates the project's file storage: for each environment in RUSTFS_INIT_ENVIRONMENTS, the buckets
-# <PROJECT_NAME>-<environment>-public and -private, then the user <PROJECT_NAME> allowed to use them. Existing buckets
-# and the existing user are kept, so reruns never rotate the user's secret key; it is written to the output directory
-# only when the user is created.
+# For each environment in RUSTFS_INIT_ENVIRONMENTS, creates the buckets <PROJECT_NAME>-<environment>-public and -private
+# and the user <PROJECT_NAME>-<environment> allowed to use only them. Existing buckets and users are kept, so reruns never
+# rotate a secret key; it is written to <output>/<PROJECT_NAME>-<environment>.env only when the user is created.
 
 set -eu
 
 # Constants/Variables
 readonly ALIAS='rustfs'
-readonly CREDENTIALS_PATH='/output/credentials.env'
-readonly USER_NAME="${PROJECT_NAME}"
-readonly USER_POLICY="${PROJECT_NAME}-files"
 TEMP_DIR=''
 
 # Functions
@@ -42,18 +38,14 @@ uri_encode() {
 }
 
 ensure_buckets() {
-    bucket_resources=''
-    for environment in $(printf '%s' "${RUSTFS_INIT_ENVIRONMENTS}" | tr ',' ' '); do
-        for visibility in public private; do
-            bucket="${PROJECT_NAME}-${environment}-${visibility}"
-            log_info "Ensuring bucket: ${bucket}..."
-            rc --quiet mb --ignore-existing "${ALIAS}/${bucket}"
-            bucket_resources="${bucket_resources}\"arn:aws:s3:::${bucket}\",\"arn:aws:s3:::${bucket}/*\","
-        done
+    prefix="$1"
+    for visibility in public private; do
+        log_info "Ensuring bucket: ${prefix}-${visibility}..."
+        rc --quiet mb --ignore-existing "${ALIAS}/${prefix}-${visibility}"
+    done
 
-        # Anonymous reads of files/* only (served through the gateway); replaces the whole bucket policy.
-        public_bucket="${PROJECT_NAME}-${environment}-public"
-        cat >"${TEMP_DIR}/public-bucket-policy.json" <<EOF
+    # Anonymous reads of files/* only (served through the gateway); replaces the whole bucket policy.
+    cat >"${TEMP_DIR}/public-bucket-policy.json" <<EOF
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -61,14 +53,16 @@ ensure_buckets() {
             "Effect": "Allow",
             "Principal": { "AWS": ["*"] },
             "Action": ["s3:GetObject"],
-            "Resource": ["arn:aws:s3:::${public_bucket}/files/*"]
+            "Resource": ["arn:aws:s3:::${prefix}-public/files/*"]
         }
     ]
 }
 EOF
-        rc --quiet anonymous set-json "${TEMP_DIR}/public-bucket-policy.json" "${ALIAS}/${public_bucket}"
-    done
+    rc --quiet anonymous set-json "${TEMP_DIR}/public-bucket-policy.json" "${ALIAS}/${prefix}-public"
+}
 
+ensure_user() {
+    prefix="$1"
     cat >"${TEMP_DIR}/user-policy.json" <<EOF
 {
     "Version": "2012-10-17",
@@ -82,45 +76,45 @@ EOF
                 "s3:ListBucket",
                 "s3:PutObject"
             ],
-            "Resource": [${bucket_resources%,}]
+            "Resource": [
+                "arn:aws:s3:::${prefix}-private",
+                "arn:aws:s3:::${prefix}-private/*",
+                "arn:aws:s3:::${prefix}-public",
+                "arn:aws:s3:::${prefix}-public/*"
+            ]
         }
     ]
 }
 EOF
-}
-
-ensure_user() {
-    log_info "Ensuring policy: ${USER_POLICY}..."
-    rc --quiet admin policy create "${ALIAS}" "${USER_POLICY}" "${TEMP_DIR}/user-policy.json"
+    log_info "Ensuring policy: ${prefix}-files..."
+    rc --quiet admin policy create "${ALIAS}" "${prefix}-files" "${TEMP_DIR}/user-policy.json"
 
     set +e
-    rc --quiet admin user info "${ALIAS}" "${USER_NAME}" >/dev/null 2>&1
+    rc --quiet admin user info "${ALIAS}" "${prefix}" >/dev/null 2>&1
     user_info_exit_code=$?
     set -e
 
     case "${user_info_exit_code}" in
-    0) log_info "User exists; keeping its secret key: ${USER_NAME}" ;;
+    0) log_info "User exists; keeping its secret key: ${prefix}" ;;
     5)
-        log_info "Creating user: ${USER_NAME}..."
+        log_info "Creating user: ${prefix}..."
         # `user add` only takes the secret key as an argument, so it gets a throwaway key that is replaced right
         # away through a file.
-        rc --quiet admin user add "${ALIAS}" "${USER_NAME}" "$(generate_secret_key)"
+        rc --quiet admin user add "${ALIAS}" "${prefix}" "$(generate_secret_key)"
         secret_key="$(generate_secret_key)"
         printf '%s' "${secret_key}" >"${TEMP_DIR}/secret-key"
-        rc --quiet admin user passwd "${ALIAS}" "${USER_NAME}" --password-file "${TEMP_DIR}/secret-key"
-        printf "FILE_STORAGE_S3_ACCESS_KEY_ID='%s'\nFILE_STORAGE_S3_SECRET_ACCESS_KEY='%s'\n" \
-            "${USER_NAME}" \
-            "${secret_key}" >"${CREDENTIALS_PATH}"
-        chmod 600 "${CREDENTIALS_PATH}"
-        log_success "User credentials written to the output directory: credentials.env"
+        rc --quiet admin user passwd "${ALIAS}" "${prefix}" --password-file "${TEMP_DIR}/secret-key"
+        printf "FILE_STORAGE_S3_SECRET_ACCESS_KEY='%s'\n" "${secret_key}" >"/output/${prefix}.env"
+        chmod 600 "/output/${prefix}.env"
+        log_success "Secret key written to the output directory: ${prefix}.env"
         ;;
     *)
-        log_error "Failed to look up user ${USER_NAME}; rc exited with: ${user_info_exit_code}"
+        log_error "Failed to look up user ${prefix}; rc exited with: ${user_info_exit_code}"
         exit 1
         ;;
     esac
 
-    rc --quiet admin policy attach "${ALIAS}" "${USER_POLICY}" --user "${USER_NAME}"
+    rc --quiet admin policy attach "${ALIAS}" "${prefix}-files" --user "${prefix}"
 }
 
 # Run
@@ -130,12 +124,15 @@ main() {
     trap cleanup EXIT
 
     # rc reads the alias from the environment, keeping the root credentials out of argv and the config file.
-    access_key="$(uri_encode "$(cat /run/secrets/RUSTFS_ACCESS_KEY)")"
-    secret_key="$(uri_encode "$(cat /run/secrets/RUSTFS_SECRET_KEY)")"
-    export "RC_HOST_${ALIAS}=http://${access_key}:${secret_key}@${RUSTFS_HOST}"
+    root_access_key="$(uri_encode "$(cat /run/secrets/RUSTFS_ACCESS_KEY)")"
+    root_secret_key="$(uri_encode "$(cat /run/secrets/RUSTFS_SECRET_KEY)")"
+    export "RC_HOST_${ALIAS}=http://${root_access_key}:${root_secret_key}@${RUSTFS_HOST}"
 
-    ensure_buckets
-    ensure_user
+    for environment in $(printf '%s' "${RUSTFS_INIT_ENVIRONMENTS}" | tr ',' ' '); do
+        ensure_buckets "${PROJECT_NAME}-${environment}"
+        ensure_user "${PROJECT_NAME}-${environment}"
+    done
+
     log_success 'RustFS initialized'
 }
 
