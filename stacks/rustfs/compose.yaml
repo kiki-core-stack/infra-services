@@ -1,3 +1,7 @@
+# Shared with the main stack's gateway, which serves the public bucket, so the gateway stays off the default network with the databases.
+networks:
+  file-storage:
+
 secrets:
   RUSTFS_ACCESS_KEY:
     environment: RUSTFS_ACCESS_KEY
@@ -37,6 +41,9 @@ services:
       options:
         max-file: '5'
         max-size: 10m
+    networks:
+      - default
+      - file-storage
     ports:
       - '${RUSTFS_EXPOSE_HOST:?must be set}:${RUSTFS_API_EXPOSE_PORT:?must be set}:9000'
       - '${RUSTFS_EXPOSE_HOST:?must be set}:${RUSTFS_CONSOLE_EXPOSE_PORT:?must be set}:9001'
